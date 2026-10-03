@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spider-vision"
+version = "0.1.0"
+description = "Real-time hand tracking, gesture recognition and Spider-Man themed AR effects with MediaPipe and OpenCV."
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "Sena Küçük" }]
+license = "MIT"
+
+# Every package we import directly is listed here, even if another
+# package already pulls it in.
+dependencies = [
+    "mediapipe>=1.0.1,<2",
+    # Same OpenCV build that mediapipe installs. Do NOT add
+    # "opencv-python" as well: both provide `cv2` and conflict.
+    "opencv-contrib-python>=5.0,<6",
+    "numpy>=2.0,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
