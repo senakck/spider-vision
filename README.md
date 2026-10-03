@@ -7,7 +7,7 @@ The long-term goal is a gesture-controlled AR mini game: shoot webs with the
 Spider-Man hand sign, control the mouse with your hand, and wear a mask that
 follows your face, all from a regular webcam and running fully on-device.
 
-> **Status:** early development, milestone **M0 (Project Setup)**.
+> **Status:** early development. **M0 (Project Setup)** is done, **M1 (Camera)** is next.
 > See [ROADMAP.md](ROADMAP.md) for progress and technical decisions.
 
 ## Planned features

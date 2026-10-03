@@ -5,7 +5,7 @@ after it has been tested on real hardware.
 
 | # | Milestone | Goal | Status |
 |---|---|---|---|
-| M0 | Project Setup | Project skeleton, environment, tests, Git | 🔄 In progress |
+| M0 | Project Setup | Project skeleton, environment, tests, Git | ✅ Done |
 | M1 | Camera | Webcam stream, FPS counter, ESC/Q to quit | ⏳ Planned |
 | M2 | Hand Tracking | 21 hand landmarks with MediaPipe Tasks | ⏳ Planned |
 | M3 | Gesture Recognition | OPEN_HAND, FIST, POINT, PINCH, SPIDER_MAN | ⏳ Planned |
