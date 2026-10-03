@@ -1,0 +1,21 @@
+# Virtual environment (each developer creates their own)
+.venv/
+
+# Python build and cache files
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+
+# Test cache
+.pytest_cache/
+
+# MediaPipe models: downloaded with scripts/download_models.py
+models/
+
+# Editor and OS files
+.vscode/
+Thumbs.db
+desktop.ini
+.DS_Store
