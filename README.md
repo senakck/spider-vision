@@ -7,7 +7,7 @@ The long-term goal is a gesture-controlled AR mini game: shoot webs with the
 Spider-Man hand sign, control the mouse with your hand, and wear a mask that
 follows your face, all from a regular webcam and running fully on-device.
 
-> **Status:** early development. **M0 (Project Setup)** is done, **M1 (Camera)** is next.
+> **Status:** early development. **M1 (Camera)** is done, **M2 (Hand Tracking)** is next.
 > See [ROADMAP.md](ROADMAP.md) for progress and technical decisions.
 
 ## Planned features
@@ -59,6 +59,12 @@ python -m pip install -e ".[dev]"
 python scripts/download_models.py
 ```
 
+Start the app (opens your webcam with an FPS counter; press **ESC** or **Q** to quit):
+
+```powershell
+python -m spider_vision
+```
+
 Run the tests (no camera needed):
 
 ```powershell
@@ -77,6 +83,8 @@ src/spider_vision/
     controls/   system-level actions (mouse)
     game/       game state and rules
     config.py   all thresholds and settings
+    fps.py      FPS measurement for the main loop
+    __main__.py entry point: logging, main loop, window and keyboard
 scripts/        setup helpers (model download)
 tests/          unit tests
 ```

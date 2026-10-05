@@ -6,7 +6,7 @@ after it has been tested on real hardware.
 | # | Milestone | Goal | Status |
 |---|---|---|---|
 | M0 | Project Setup | Project skeleton, environment, tests, Git | ✅ Done |
-| M1 | Camera | Webcam stream, FPS counter, ESC/Q to quit | ⏳ Planned |
+| M1 | Camera | Webcam stream, FPS counter, ESC/Q to quit | ✅ Done |
 | M2 | Hand Tracking | 21 hand landmarks with MediaPipe Tasks | ⏳ Planned |
 | M3 | Gesture Recognition | OPEN_HAND, FIST, POINT, PINCH, SPIDER_MAN | ⏳ Planned |
 | M4 | Mouse Control | Hand-controlled mouse, pinch to click | ⏳ Planned |
@@ -42,11 +42,23 @@ Decisions are recorded here so the reasoning is not lost.
   history and always fetches the file from the official source.
 - **MediaPipe Tasks API** (`mp.tasks.vision`), not the legacy `mp.solutions`.
 
-### Decided for M1
+### M1 - Camera
 
 - **Logging:** standard library `logging`. Each module uses
-  `logging.getLogger(__name__)`; logging is configured once at the entry point
+  `logging.getLogger(__name__)`; logging is configured once in `__main__.py`
   from `AppConfig.log_level`. No `print` in library code.
-- **ESC/Q exit:** handled in the main loop at the entry point, not in the
-  camera layer (the camera only delivers frames). Camera release is guaranteed
-  with `try/finally`, so the webcam is freed even after an error.
+- **Keyboard and window live in `__main__.py`**, not in the camera layer (the
+  camera only delivers frames). ESC, Q and the window's X button all exit.
+- **`Camera` is a context manager**, so the webcam is released even after an
+  error. Its video source is injected (`source_factory`), which lets tests use
+  a fake source instead of real hardware.
+- **`Camera.read()` returns `None` on a missed frame** instead of raising; one
+  dropped frame is normal. The main loop stops after
+  `CameraConfig.max_read_failures` misses in a row (e.g. camera unplugged).
+- **Frames are mirrored at capture** (`CameraConfig.mirror`), so the view
+  behaves like a mirror. Note for M2: MediaPipe's left/right hand labels will
+  be swapped on mirrored frames.
+- **FPS is averaged over the last 30 frames** for a stable readout. The clock
+  is injected, so tests run instantly without real time passing.
+- **Baseline:** 30 FPS at 640x480 on the development laptop with no
+  processing. M2 will be measured against this number.
