@@ -25,12 +25,19 @@ class CameraConfig:
     mirror: bool = True
     """Flip frames horizontally so the view behaves like a mirror."""
 
+    max_read_failures: int = 30
+    """Stop after this many frames in a row fail to arrive (camera unplugged)."""
+
     def __post_init__(self) -> None:
         if self.index < 0:
             raise ValueError(f"camera index must be >= 0, got {self.index}")
         if self.width <= 0 or self.height <= 0:
             raise ValueError(
                 f"camera resolution must be positive, got {self.width}x{self.height}"
+            )
+        if self.max_read_failures < 1:
+            raise ValueError(
+                f"max_read_failures must be >= 1, got {self.max_read_failures}"
             )
 
 

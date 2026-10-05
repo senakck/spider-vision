@@ -28,7 +28,7 @@ def test_camera_defaults_match_tested_webcam() -> None:
 
 @pytest.mark.parametrize(
     "kwargs",
-    [{"index": -1}, {"width": 0}, {"height": -480}],
+    [{"index": -1}, {"width": 0}, {"height": -480}, {"max_read_failures": 0}],
 )
 def test_invalid_camera_settings_are_rejected(kwargs: dict[str, int]) -> None:
     with pytest.raises(ValueError):
