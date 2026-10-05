@@ -7,7 +7,7 @@ after it has been tested on real hardware.
 |---|---|---|---|
 | M0 | Project Setup | Project skeleton, environment, tests, Git | ✅ Done |
 | M1 | Camera | Webcam stream, FPS counter, ESC/Q to quit | ✅ Done |
-| M2 | Hand Tracking | 21 hand landmarks with MediaPipe Tasks | ⏳ Planned |
+| M2 | Hand Tracking | 21 hand landmarks with MediaPipe Tasks | ✅ Done |
 | M3 | Gesture Recognition | OPEN_HAND, FIST, POINT, PINCH, SPIDER_MAN | ⏳ Planned |
 | M4 | Mouse Control | Hand-controlled mouse, pinch to click | ⏳ Planned |
 | M5 | Face Tracking | Face landmarks | ⏳ Planned |
@@ -62,3 +62,27 @@ Decisions are recorded here so the reasoning is not lost.
   is injected, so tests run instantly without real time passing.
 - **Baseline:** 30 FPS at 640x480 on the development laptop with no
   processing. M2 will be measured against this number.
+
+### M2 - Hand Tracking
+
+- **A MediaPipe-free domain model** (`vision/landmarks.py`): `Hand`,
+  `Landmark` and the 21 named `HandLandmark`s. Gesture code reads
+  `hand[HandLandmark.INDEX_FINGER_TIP]`, never raw MediaPipe indices.
+- **Only `vision/hand_tracker.py` imports MediaPipe**, and
+  `hands_from_result()` is the single place its results are converted. If the
+  MediaPipe API changes again, only this file is affected.
+- **Normalized coordinates for logic, pixels only for drawing.** Thresholds
+  in normalized units work at any camera resolution.
+- **VIDEO running mode**, not LIVE_STREAM: synchronous, so each frame's result
+  belongs to that frame. Timestamps are forced to strictly increase
+  (`MonotonicTimestamp`), as VIDEO mode requires.
+- **Frames are converted BGR to RGB** before inference; OpenCV and MediaPipe
+  use different channel orders.
+- **Handedness is corrected for mirrored frames.** The Tasks API labels hands
+  as they appear in an unmirrored image. Verified on a real webcam: without
+  the swap, the right hand was labelled "Left".
+- **`max_hands = 1`** for now; each extra hand adds tracking cost.
+- **Performance:** still 29-30 FPS at 640x480 with tracking on, the same as
+  the M1 baseline. The camera, not inference, is the bottleneck.
+- **One integration test loads the real model**; it is skipped when the model
+  has not been downloaded.
