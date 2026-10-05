@@ -4,7 +4,7 @@ import dataclasses
 
 import pytest
 
-from spider_vision.config import AppConfig, CameraConfig
+from spider_vision.config import AppConfig, CameraConfig, HandTrackingConfig
 
 
 def test_default_log_level_is_info() -> None:
@@ -33,3 +33,21 @@ def test_camera_defaults_match_tested_webcam() -> None:
 def test_invalid_camera_settings_are_rejected(kwargs: dict[str, int]) -> None:
     with pytest.raises(ValueError):
         CameraConfig(**kwargs)
+
+
+def test_hand_tracking_tracks_one_hand_by_default() -> None:
+    assert AppConfig().hand.max_hands == 1
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"max_hands": 0},
+        {"min_detection_confidence": -0.1},
+        {"min_presence_confidence": 1.5},
+        {"min_tracking_confidence": 2.0},
+    ],
+)
+def test_invalid_hand_tracking_settings_are_rejected(kwargs: dict[str, float]) -> None:
+    with pytest.raises(ValueError):
+        HandTrackingConfig(**kwargs)
