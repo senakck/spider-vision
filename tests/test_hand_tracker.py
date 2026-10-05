@@ -30,15 +30,26 @@ def fake_result(handedness: str) -> SimpleNamespace:
 
 
 def test_result_is_converted_to_domain_hand() -> None:
-    [hand] = hands_from_result(fake_result("Right"))
+    [hand] = hands_from_result(fake_result("Right"), mirrored=False)
     assert hand.handedness is Handedness.RIGHT
     assert hand.score == pytest.approx(0.97)
     assert hand[HandLandmark.INDEX_FINGER_TIP].x == pytest.approx(0.08)
 
 
+@pytest.mark.parametrize(
+    ("mediapipe_label", "expected"),
+    [("Right", Handedness.LEFT), ("Left", Handedness.RIGHT)],
+)
+def test_handedness_is_swapped_on_mirrored_frames(
+    mediapipe_label: str, expected: Handedness
+) -> None:
+    [hand] = hands_from_result(fake_result(mediapipe_label), mirrored=True)
+    assert hand.handedness is expected
+
+
 def test_empty_result_gives_no_hands() -> None:
     empty = SimpleNamespace(hand_landmarks=[], handedness=[])
-    assert hands_from_result(empty) == []
+    assert hands_from_result(empty, mirrored=False) == []
 
 
 def test_timestamps_always_increase_even_if_clock_does_not() -> None:
@@ -49,11 +60,11 @@ def test_timestamps_always_increase_even_if_clock_does_not() -> None:
 def test_missing_model_gives_helpful_error() -> None:
     config = HandTrackingConfig(model_path=Path("does/not/exist.task"))
     with pytest.raises(VisionError, match="download_models"):
-        HandTracker(config).open()
+        HandTracker(config, mirrored=False).open()
 
 
 @pytest.mark.skipif(not MODEL_PATH.is_file(), reason="model not downloaded")
 def test_real_model_finds_no_hand_in_black_frame() -> None:
     black = np.zeros((480, 640, 3), dtype=np.uint8)
-    with HandTracker(HandTrackingConfig()) as tracker:
+    with HandTracker(HandTrackingConfig(), mirrored=False) as tracker:
         assert tracker.detect(black) == []

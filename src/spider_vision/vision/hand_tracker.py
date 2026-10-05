@@ -49,15 +49,26 @@ class MonotonicTimestamp:
         return now
 
 
-def hands_from_result(result: HandLandmarkerResult) -> list[Hand]:
-    """Convert a MediaPipe result into domain ``Hand`` objects."""
+_OTHER_HAND = {Handedness.LEFT: Handedness.RIGHT, Handedness.RIGHT: Handedness.LEFT}
+
+
+def hands_from_result(result: HandLandmarkerResult, mirrored: bool) -> list[Hand]:
+    """Convert a MediaPipe result into domain ``Hand`` objects.
+
+    MediaPipe labels hands as they appear in an unmirrored camera image.
+    On a mirrored frame the labels are swapped back, so ``handedness`` is
+    always the user's real left or right hand (verified on a real webcam).
+    """
     hands: list[Hand] = []
     for landmarks, categories in zip(result.hand_landmarks, result.handedness):
         best = categories[0]
+        handedness = Handedness(best.category_name)
+        if mirrored:
+            handedness = _OTHER_HAND[handedness]
         hands.append(
             Hand(
                 landmarks=tuple(Landmark(p.x, p.y, p.z) for p in landmarks),
-                handedness=Handedness(best.category_name),
+                handedness=handedness,
                 score=best.score,
             )
         )
@@ -69,16 +80,18 @@ class HandTracker:
 
     Use it as a context manager so the model is always released:
 
-        with HandTracker(config.hand) as tracker:
+        with HandTracker(config.hand, mirrored=True) as tracker:
             hands = tracker.detect(frame)
     """
 
     def __init__(
         self,
         config: HandTrackingConfig,
+        mirrored: bool,
         timestamps: MonotonicTimestamp | None = None,
     ) -> None:
         self._config = config
+        self._mirrored = mirrored
         self._timestamps = timestamps or MonotonicTimestamp()
         self._landmarker: mp.tasks.vision.HandLandmarker | None = None
 
@@ -111,7 +124,7 @@ class HandTracker:
         rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
         result = self._landmarker.detect_for_video(image, self._timestamps.next())
-        return hands_from_result(result)
+        return hands_from_result(result, self._mirrored)
 
     def close(self) -> None:
         if self._landmarker is not None:

@@ -10,7 +10,9 @@ import cv2
 
 from spider_vision.camera import Camera, CameraError, Frame
 from spider_vision.config import AppConfig
+from spider_vision.effects import draw_hand
 from spider_vision.fps import FpsCounter
+from spider_vision.vision import HandTracker, VisionError
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +52,9 @@ def run(config: AppConfig) -> int:
     fps = FpsCounter()
     failures = 0
 
-    with Camera(config.camera) as camera:
+    with Camera(config.camera) as camera, HandTracker(
+        config.hand, mirrored=config.camera.mirror
+    ) as tracker:
         try:
             while True:
                 frame = camera.read()
@@ -61,6 +65,9 @@ def run(config: AppConfig) -> int:
                         return 1
                     continue
                 failures = 0
+
+                for hand in tracker.detect(frame):
+                    draw_hand(frame, hand)
 
                 fps.tick()
                 draw_fps(frame, fps.fps)
@@ -81,7 +88,7 @@ def main() -> int:
     logger.info("Starting Spider Vision. Press ESC or Q to quit.")
     try:
         return run(config)
-    except CameraError as error:
+    except (CameraError, VisionError) as error:
         logger.error("%s", error)
         return 1
     except KeyboardInterrupt:
