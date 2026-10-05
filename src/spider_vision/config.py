@@ -8,7 +8,30 @@ Dataclasses are frozen so that no layer can change a setting at runtime by
 accident.
 """
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+
+
+@dataclass(frozen=True)
+class CameraConfig:
+    """Webcam settings (M1)."""
+
+    index: int = 0
+    """Which webcam to open. 0 is usually the built-in camera."""
+
+    width: int = 640
+    height: int = 480
+    """Requested resolution. The camera may pick the closest size it supports."""
+
+    mirror: bool = True
+    """Flip frames horizontally so the view behaves like a mirror."""
+
+    def __post_init__(self) -> None:
+        if self.index < 0:
+            raise ValueError(f"camera index must be >= 0, got {self.index}")
+        if self.width <= 0 or self.height <= 0:
+            raise ValueError(
+                f"camera resolution must be positive, got {self.width}x{self.height}"
+            )
 
 
 @dataclass(frozen=True)
@@ -16,3 +39,4 @@ class AppConfig:
     """Top-level application settings."""
 
     log_level: str = "INFO"
+    camera: CameraConfig = field(default_factory=CameraConfig)
