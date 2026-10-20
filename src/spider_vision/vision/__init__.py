@@ -7,6 +7,7 @@ from spider_vision.vision.landmarks import (
     HandLandmark,
     Handedness,
     Landmark,
+    WorldPoint,
 )
 
 __all__ = [
@@ -17,4 +18,5 @@ __all__ = [
     "Handedness",
     "Landmark",
     "VisionError",
+    "WorldPoint",
 ]

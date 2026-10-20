@@ -16,7 +16,7 @@ import mediapipe as mp
 
 from spider_vision.camera import Frame
 from spider_vision.config import HandTrackingConfig
-from spider_vision.vision.landmarks import Hand, Handedness, Landmark
+from spider_vision.vision.landmarks import Hand, Handedness, Landmark, WorldPoint
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,9 @@ def hands_from_result(result: HandLandmarkerResult, mirrored: bool) -> list[Hand
     always the user's real left or right hand (verified on a real webcam).
     """
     hands: list[Hand] = []
-    for landmarks, categories in zip(result.hand_landmarks, result.handedness):
+    for landmarks, world, categories in zip(
+        result.hand_landmarks, result.hand_world_landmarks, result.handedness
+    ):
         best = categories[0]
         handedness = Handedness(best.category_name)
         if mirrored:
@@ -68,6 +70,7 @@ def hands_from_result(result: HandLandmarkerResult, mirrored: bool) -> list[Hand
         hands.append(
             Hand(
                 landmarks=tuple(Landmark(p.x, p.y, p.z) for p in landmarks),
+                world_landmarks=tuple(WorldPoint(p.x, p.y, p.z) for p in world),
                 handedness=handedness,
                 score=best.score,
             )

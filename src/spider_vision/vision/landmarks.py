@@ -62,22 +62,49 @@ class Landmark:
 
 
 @dataclass(frozen=True)
+class WorldPoint:
+    """One landmark in real-world 3D coordinates, in meters.
+
+    The origin is roughly the center of the hand. Distances between world
+    points do not depend on how far the hand is from the camera or on the
+    image's aspect ratio, which makes them the right input for hand-shape
+    (gesture) geometry.
+    """
+
+    x: float
+    y: float
+    z: float
+
+
+@dataclass(frozen=True)
 class Hand:
-    """A single detected hand."""
+    """A single detected hand.
+
+    ``landmarks`` say *where on screen* the hand is (drawing, mouse).
+    ``world_landmarks`` say *what shape* the hand has (gestures).
+    """
 
     landmarks: tuple[Landmark, ...]
+    world_landmarks: tuple[WorldPoint, ...]
     handedness: Handedness
     score: float
     """How confident the model is about the handedness, from 0 to 1."""
 
     def __post_init__(self) -> None:
-        if len(self.landmarks) != len(HandLandmark):
-            raise ValueError(
-                f"a hand needs {len(HandLandmark)} landmarks, got {len(self.landmarks)}"
-            )
+        for name, points in (
+            ("landmarks", self.landmarks),
+            ("world_landmarks", self.world_landmarks),
+        ):
+            if len(points) != len(HandLandmark):
+                raise ValueError(
+                    f"a hand needs {len(HandLandmark)} {name}, got {len(points)}"
+                )
 
     def __getitem__(self, landmark: HandLandmark) -> Landmark:
         return self.landmarks[landmark]
+
+    def world(self, landmark: HandLandmark) -> WorldPoint:
+        return self.world_landmarks[landmark]
 
 
 # Pairs of landmarks joined by a bone, used for drawing the hand skeleton.

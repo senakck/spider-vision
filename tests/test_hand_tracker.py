@@ -25,8 +25,11 @@ MODEL_PATH = HandTrackingConfig().model_path
 def fake_result(handedness: str) -> SimpleNamespace:
     """Looks like a MediaPipe result with one hand."""
     points = [SimpleNamespace(x=i / 100, y=0.5, z=-0.01) for i in range(21)]
+    world = [SimpleNamespace(x=i / 1000, y=0.0, z=0.0) for i in range(21)]
     category = SimpleNamespace(category_name=handedness, score=0.97)
-    return SimpleNamespace(hand_landmarks=[points], handedness=[[category]])
+    return SimpleNamespace(
+        hand_landmarks=[points], hand_world_landmarks=[world], handedness=[[category]]
+    )
 
 
 def test_result_is_converted_to_domain_hand() -> None:
@@ -34,6 +37,7 @@ def test_result_is_converted_to_domain_hand() -> None:
     assert hand.handedness is Handedness.RIGHT
     assert hand.score == pytest.approx(0.97)
     assert hand[HandLandmark.INDEX_FINGER_TIP].x == pytest.approx(0.08)
+    assert hand.world(HandLandmark.INDEX_FINGER_TIP).x == pytest.approx(0.008)
 
 
 @pytest.mark.parametrize(
@@ -48,7 +52,7 @@ def test_handedness_is_swapped_on_mirrored_frames(
 
 
 def test_empty_result_gives_no_hands() -> None:
-    empty = SimpleNamespace(hand_landmarks=[], handedness=[])
+    empty = SimpleNamespace(hand_landmarks=[], hand_world_landmarks=[], handedness=[])
     assert hands_from_result(empty, mirrored=False) == []
 
 
